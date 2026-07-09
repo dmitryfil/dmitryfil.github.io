@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Patio Matchday · July 11, 2026 · Downtown Toronto</title>
-    <meta name="description" content="Where to watch the FIFA World Cup 2026 quarter-finals on July 11 from a patio in downtown Toronto — 26 hand-picked spots with reservation tips.">
+    <meta name="description" content="Where to watch the FIFA World Cup 2026 quarter-finals on July 11 from a patio in downtown Toronto — 26 spots on a map, with reservation tips.">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <style>
       :root {
         color-scheme: dark;
@@ -129,7 +131,7 @@
       .why p { margin: 0 0 12px; }
       .why p:last-child { margin-bottom: 0; }
 
-      /* Venues */
+      /* Map */
       .count {
         display: inline-block;
         margin-left: 12px;
@@ -140,10 +142,41 @@
         vertical-align: middle;
       }
 
+      #map {
+        height: clamp(360px, 60vh, 560px);
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        background: #12141a;
+      }
+
+      .leaflet-container { background: #12141a; font: inherit; }
+      .leaflet-popup-content-wrapper,
+      .leaflet-popup-tip {
+        background: #1b1e25;
+        color: var(--ink);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      }
+      .leaflet-popup-content { margin: 14px 16px; line-height: 1.5; }
+      .leaflet-popup-content .pop-name { font-weight: 600; font-size: 1rem; }
+      .leaflet-popup-content .pop-hood {
+        color: var(--accent);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+      .leaflet-popup-content .pop-reserve { color: rgba(244,240,232,0.8); font-size: 0.85rem; margin-top: 8px; }
+      .leaflet-popup-content a { color: var(--accent); }
+      .leaflet-bar a, .leaflet-control-attribution { color: #111 !important; }
+      .leaflet-control-attribution a { color: #06c !important; }
+
+      /* Venues list */
       .venues {
         display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       }
 
       .venue {
@@ -151,8 +184,8 @@
         flex-direction: column;
         border: 1px solid var(--line);
         background: var(--card);
-        border-radius: 16px;
-        padding: 20px;
+        border-radius: 14px;
+        padding: 18px;
         transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
       }
       .venue:hover {
@@ -161,10 +194,7 @@
         transform: translateY(-2px);
       }
 
-      .venue h3 {
-        margin: 0 0 2px;
-        font-size: 1.16rem;
-      }
+      .venue h3 { margin: 0 0 2px; font-size: 1.1rem; }
       .venue h3 a {
         color: var(--ink);
         text-decoration: none;
@@ -178,26 +208,108 @@
 
       .venue .hood {
         margin: 0 0 12px;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--accent);
       }
 
-      .venue p {
-        margin: 0 0 14px;
-        font-size: 0.95rem;
-        color: rgba(244, 240, 232, 0.82);
-      }
-
       .venue .reserve {
-        margin-top: auto;
+        margin: auto 0 0;
         padding-top: 12px;
         border-top: 1px dashed var(--line);
-        font-size: 0.86rem;
+        font-size: 0.85rem;
         color: var(--soft);
       }
       .venue .reserve strong { color: var(--ink); font-weight: 600; }
+
+      /* Hero banner */
+      .hero {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        margin-bottom: clamp(28px, 5vw, 40px);
+        background: linear-gradient(180deg, #14121a 0%, #241a1c 55%, #2b1f18 100%);
+        min-height: clamp(300px, 46vh, 440px);
+        display: flex;
+        align-items: flex-end;
+      }
+      .hero svg.skyline {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .hero .hero-copy {
+        position: relative;
+        z-index: 2;
+        padding: clamp(24px, 4vw, 40px);
+        width: 100%;
+        background: linear-gradient(0deg, rgba(13,15,18,0.82) 0%, rgba(13,15,18,0.35) 55%, transparent 100%);
+      }
+      .hero h1 { margin: 0; }
+      .hero .lede { margin-top: 16px; }
+
+      /* Top 3 */
+      .top3 {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .pick {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 16px;
+        padding: 22px;
+        overflow: hidden;
+      }
+      .pick::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--soft));
+      }
+      .pick .rank {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px; height: 34px;
+        border-radius: 50%;
+        background: rgba(214,168,95,0.14);
+        border: 1px solid rgba(214,168,95,0.5);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 14px;
+      }
+      .pick .icon { width: 30px; height: 30px; position: absolute; top: 22px; right: 22px; opacity: 0.85; }
+      .pick h3 { margin: 0 0 2px; font-size: 1.22rem; }
+      .pick h3 a { color: var(--ink); text-decoration: none; }
+      .pick h3 a:hover { color: var(--accent); }
+      .pick .hood {
+        margin: 0 0 12px;
+        font-size: 0.78rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .pick p.why { margin: 0 0 14px; font-size: 0.95rem; color: rgba(244,240,232,0.86); }
+      .pick .reserve {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px dashed var(--line);
+        font-size: 0.85rem;
+        color: var(--soft);
+      }
+      .pick .reserve strong { color: var(--ink); font-weight: 600; }
 
       footer {
         margin-top: clamp(48px, 8vw, 72px);
@@ -214,19 +326,79 @@
   </head>
   <body>
     <main>
-      <p class="eyebrow">Patio Matchday · Saturday, July 11, 2026</p>
-      <h1>World Cup on a Downtown Toronto Patio</h1>
-      <p class="lede">
-        Two quarter-finals, warm July light, and a cold drink in hand. Here's the
-        schedule for the day plus 26 downtown patios and rooftops to watch it all —
-        with a note on how to lock in a seat at each.
+      <div class="hero">
+        <svg class="skyline" viewBox="0 0 1600 380" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <defs>
+            <radialGradient id="sun" cx="50%" cy="90%" r="60%">
+              <stop offset="0%" stop-color="#e7b878" stop-opacity="0.55"/>
+              <stop offset="45%" stop-color="#d6a85f" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#d6a85f" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="800" cy="360" r="360" fill="url(#sun)"/>
+          <!-- back layer -->
+          <g fill="#221a1e">
+            <rect x="40" y="230" width="70" height="150"/>
+            <rect x="120" y="270" width="55" height="110"/>
+            <rect x="185" y="205" width="80" height="175"/>
+            <rect x="280" y="255" width="60" height="125"/>
+            <rect x="350" y="220" width="70" height="160"/>
+            <rect x="1180" y="215" width="80" height="165"/>
+            <rect x="1270" y="255" width="55" height="125"/>
+            <rect x="1335" y="200" width="85" height="180"/>
+            <rect x="1430" y="245" width="60" height="135"/>
+            <rect x="1500" y="215" width="80" height="165"/>
+          </g>
+          <!-- front layer -->
+          <g fill="#100d12">
+            <rect x="60" y="285" width="90" height="95"/>
+            <rect x="160" y="255" width="70" height="125"/>
+            <rect x="240" y="300" width="85" height="80"/>
+            <rect x="335" y="265" width="75" height="115"/>
+            <rect x="430" y="230" width="95" height="150"/>
+            <rect x="540" y="285" width="70" height="95"/>
+            <rect x="620" y="250" width="80" height="130"/>
+            <!-- CN Tower -->
+            <rect x="742" y="150" width="16" height="230"/>
+            <polygon points="736,150 764,150 758,120 742,120"/>
+            <ellipse cx="750" cy="150" rx="34" ry="15"/>
+            <ellipse cx="750" cy="150" rx="34" ry="9" fill="#d6a85f" opacity="0.85"/>
+            <rect x="746" y="60" width="8" height="62"/>
+            <rect x="748.5" y="26" width="3" height="36"/>
+            <ellipse cx="750" cy="205" rx="12" ry="7"/>
+            <!-- more towers -->
+            <rect x="800" y="240" width="80" height="140"/>
+            <rect x="890" y="200" width="70" height="180"/>
+            <rect x="970" y="260" width="85" height="120"/>
+            <rect x="1065" y="225" width="75" height="155"/>
+            <rect x="1150" y="280" width="80" height="100"/>
+            <rect x="1245" y="245" width="70" height="135"/>
+            <rect x="1330" y="290" width="85" height="90"/>
+            <rect x="1430" y="260" width="70" height="120"/>
+            <rect x="1510" y="235" width="80" height="145"/>
+          </g>
+        </svg>
+        <div class="hero-copy">
+          <p class="eyebrow">Patio Matchday · Saturday, July 11, 2026</p>
+          <h1>World Cup on a Downtown Toronto Patio</h1>
+          <p class="lede">
+            Two quarter-finals, warm July light, and a cold drink in hand. Here's the
+            schedule for the day, a top-three shortlist, and 26 downtown patios and
+            rooftops on a map — with menus and how to book at each.
+          </p>
+        </div>
+      </div>
+
+      <h2>Top 3 picks</h2>
+      <p class="section-note">
+        If you only pick one place to plant yourself for the double-header, start here.
       </p>
-      <div class="rule" aria-hidden="true"></div>
+      <div class="top3" id="top3"></div>
 
       <h2>The matches</h2>
       <p class="section-note">
-        FIFA World Cup 2026 quarter-finals. Times shown in Eastern (Toronto) time —
-        both games fall neatly across one long afternoon-into-night on the patio.
+        FIFA World Cup 2026 quarter-finals. Kick-off times shown in Toronto time (ET) —
+        both games fall across one long afternoon-into-night on the patio.
       </p>
       <div class="matches">
         <div class="match">
@@ -241,218 +413,22 @@
         </div>
       </div>
 
-      <h2>Why a patio downtown?</h2>
-      <div class="why">
-        <p>
-          Toronto is a 2026 host city, and even with no match in town on July 11, the
-          city plays like it's in the tournament — flags on the patios, chants spilling
-          onto the sidewalk, and strangers celebrating goals together. Mid-July means
-          long evenings and warm nights, so an outdoor screen beats a dark sports bar.
-        </p>
-        <p>
-          The two quarter-finals bookend the day perfectly: catch <strong>Norway–England</strong>
-          in the late-afternoon sun, order dinner between games, then settle in for
-          <strong>Argentina–Switzerland</strong> under the lights. The core is walkable and
-          transit-friendly (Union Station, King and Queen streetcars), so you can bar-hop
-          if the mood shifts.
-        </p>
-        <p>
-          Everything below sits in or near the downtown core — the King West strip, the
-          Entertainment District, Harbourfront, the Financial District and St. Lawrence.
-          Tap any name to open its map, directions and official page.
-        </p>
+      <h2>The map <span class="count">26 patios &amp; rooftops</span></h2>
+      <p class="section-note">
+        All spots sit in or near the downtown core. Tap a pin for the name and how to
+        book. Pin positions are approximate — the “Open in Google Maps” link gives the
+        exact address and directions.
+      </p>
+      <div id="map" role="img" aria-label="Map of 26 patios and rooftops across downtown Toronto">
+        <p style="padding:24px;color:var(--soft);margin:0;">Loading map… if it doesn't appear, every spot is still listed below with a map link.</p>
       </div>
 
-      <h2>Where to watch <span class="count">26 patios &amp; rooftops</span></h2>
+      <h2>The list</h2>
       <p class="section-note">
         A screen and a patio at every one. On a tournament Saturday these fill up fast —
         book ahead where you can, and show up early for the walk-in and RSVP spots.
       </p>
-      <div class="venues">
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Real+Sports+Bar+and+Grill+Toronto" target="_blank" rel="noopener">Real Sports Bar &amp; Grill</a></h3>
-          <p class="hood">Maple Leaf Square · 15 York St</p>
-          <p>Toronto's flagship sports bar next to Scotiabank Arena, home to a 39-foot screen and a loud, packed matchday crowd. There's a front patio for the pre-game sun.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book online via OpenTable or realsports.ca — essential for big kick-offs.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=RendezViews+Toronto" target="_blank" rel="noopener">RendezViews</a></h3>
-          <p class="hood">Entertainment District · 229 Richmond St W</p>
-          <p>A former parking lot turned massive open-air fan zone — picnic tables, a giant screen, beach-volleyball and a CN Tower view. The city's best pure-patio watch party.</p>
-          <p class="reserve"><strong>Reserve:</strong> Free RSVP on the RendezViews site (19+). First-come seating, so arrive early.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Cafe+Diplomatico+Toronto" target="_blank" rel="noopener">Café Diplomatico</a></h3>
-          <p class="hood">Little Italy · 594 College St</p>
-          <p>A 60-year soccer institution. When a tournament is on, the big corner patio fills with fans of every nation and erupts after every goal. Italian comfort food and espresso.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in / call ahead. Patio tables go early — come before kick-off.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Score+on+King+Toronto" target="_blank" rel="noopener">Score on King</a></h3>
-          <p class="hood">St. Lawrence · 107 King St E</p>
-          <p>Built for game day: TVs on every wall, a street-side patio, and a menu of burgers, wings and outsized Caesars. Easygoing and central.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in / call ahead; larger groups can phone to hold a table.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Amsterdam+Brewhouse+Toronto" target="_blank" rel="noopener">Amsterdam Brewhouse</a></h3>
-          <p class="hood">Harbourfront · 245 Queens Quay W</p>
-          <p>A sprawling lakefront brewery patio with screens, house-brewed beer and views across Lake Ontario to the CN Tower. Breezy spot for the afternoon match.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable — the patio is huge but sells out on sunny weekends.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Kost+Bisha+Hotel+Toronto" target="_blank" rel="noopener">Kōst</a></h3>
-          <p class="hood">Bisha Hotel · 80 Blue Jays Way</p>
-          <p>A 44th-floor rooftop with an open-air terrace and skyline-and-lake views. A dressed-up Baja-California vibe for a special-occasion watch.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable well ahead; rooftop tables are limited.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Aera+Restaurant+The+Well+Toronto" target="_blank" rel="noopener">Aera</a></h3>
-          <p class="hood">The Well · 486 Front St W, 38th floor</p>
-          <p>One of the highest patios in the city, with sweeping views and an elevated menu. Their Wednesday "Open Aera" rooftop sessions are legendary — worth the ear-pop of the elevator.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable; ask specifically for the outdoor terrace.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Baro+Toronto+King+West" target="_blank" rel="noopener">Baro Rooftop</a></h3>
-          <p class="hood">King West · 485 King St W</p>
-          <p>A Latin-infused fourth-floor rooftop that's enclosed and heated, so weather never cancels the plan. Cocktails, ceviche and a lively room.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable and request Baro Rooftop.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Lavelle+Toronto+King+West" target="_blank" rel="noopener">Lavelle</a></h3>
-          <p class="hood">King West · 627 King St W</p>
-          <p>A rooftop pool-deck oasis with skyline views and a polished crowd. More see-and-be-seen than sports bar, but a memorable place to catch a goal.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book via the Lavelle website (rooftop tables + daybeds); reservations strongly recommended.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Earls+Kitchen+Bar+King+West+Toronto" target="_blank" rel="noopener">Earls King West</a></h3>
-          <p class="hood">King West · 601 King St W</p>
-          <p>Three patios including a rooftop solarium overlooking the King strip. Reliable food, big drinks and plenty of screens — an easy crowd-pleaser.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable; note "rooftop" in the reservation request.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Cactus+Club+Cafe+First+Canadian+Place+Toronto" target="_blank" rel="noopener">Cactus Club Cafe</a></h3>
-          <p class="hood">Financial District · 77 Adelaide St W</p>
-          <p>A sleek patio tucked into First Canadian Place, right in the heart of the core. Polished service, upscale pub food and a buzzy after-work energy.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable — a solid Financial District option near Union.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=The+Rec+Room+Roundhouse+Toronto" target="_blank" rel="noopener">The Rec Room</a></h3>
-          <p class="hood">Roundhouse · 255 Bremner Blvd</p>
-          <p>Arcade games, an enormous screen and a covered patio steps from the CN Tower and Rogers Centre. Great for a group that wants more than just the match.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book tables via therecroom.com; big-screen showings can be reserved for groups.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=The+Loose+Moose+Toronto+Front+Street" target="_blank" rel="noopener">The Loose Moose</a></h3>
-          <p class="hood">Downtown · 146 Front St W</p>
-          <p>A go-to sports bar a two-minute walk from Union Station, with a big front patio and screens angled everywhere. Convenient for out-of-towners.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in / call ahead; phone to hold a patio table for a group.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Wheat+Sheaf+Tavern+Toronto" target="_blank" rel="noopener">Wheat Sheaf Tavern</a></h3>
-          <p class="hood">King West · 667 King St W</p>
-          <p>Toronto's oldest tavern (since 1849) with a sprawling covered patio and screens throughout. Unpretentious, boozy and perfect for a long double-header.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in; call ahead for larger groups.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=The+Craft+Brasserie+Grille+King+Street+Toronto" target="_blank" rel="noopener">The Craft Brasserie &amp; Grille</a></h3>
-          <p class="hood">King West · 719 King St W</p>
-          <p>One of the biggest patios on King, backed by a wall of TVs and 100+ beers on tap. Loud, fun and made for a raucous matchday.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in; call ahead for patio groups on game day.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Belfast+Love+Public+House+Toronto" target="_blank" rel="noopener">Belfast Love Public House</a></h3>
-          <p class="hood">King West · 548 King St W</p>
-          <p>Irish-pub warmth with a patio out front and a footie-loving crowd. Guinness, hearty plates and singalongs when the goals go in.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book via the Belfast Love website or walk in early.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=WVRST+King+West+Toronto" target="_blank" rel="noopener">WVRST</a></h3>
-          <p class="hood">King West · 609 King St W</p>
-          <p>A German-style beer hall with communal tables, house sausages and a long list of drafts. There's a small patio, and the shared-table setup means instant matchday friends.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in only — arrive before kick-off to grab bench space.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Bar+Hop+King+West+Toronto" target="_blank" rel="noopener">Bar Hop</a></h3>
-          <p class="hood">King West · 391 King St W</p>
-          <p>A craft-beer favourite with a rooftop patio and dozens of rotating taps. More about great beer than wall-to-wall TVs, but they'll have the big games on.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in; the rooftop is first-come, so head up early.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Northern+Maverick+Brewing+Toronto" target="_blank" rel="noopener">Northern Maverick Brewing Co.</a></h3>
-          <p class="hood">King West · 115 Bathurst St</p>
-          <p>A spacious brewpub with a big patio, fresh house beer and screens for the match. Roomy enough that you can usually find space even on a busy day.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book on OpenTable or northernmaverick.ca.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Grace+OMalleys+Irish+Pub+Toronto+Duncan+Street" target="_blank" rel="noopener">Grace O'Malley's Irish Pub</a></h3>
-          <p class="hood">Entertainment District · 14 Duncan St</p>
-          <p>A massive multi-level Irish pub with a rooftop patio and screens on every floor. Classic pints-and-football atmosphere in the middle of the district.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book via the website or walk in; ask about the rooftop for the evening game.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Hemingways+Restaurant+Yorkville+Toronto" target="_blank" rel="noopener">Hemingway's</a></h3>
-          <p class="hood">Yorkville · 142 Cumberland St</p>
-          <p>A legendary multi-level rooftop patio complex just north of the core. Leafy, sprawling and always buzzing — a Toronto rite of passage on a warm night.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in only, so arrive early — it packs out on sunny evenings.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Shoeless+Joes+Adelaide+Toronto" target="_blank" rel="noopener">Shoeless Joe's</a></h3>
-          <p class="hood">Downtown · Adelaide St W</p>
-          <p>A dependable sports-bar chain done right downtown: dozens of screens, a patio, and a deep menu of wings and shareables. Nothing fancy, everything you need.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book or call via shoelessjoes.ca; walk-ins welcome.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Dukes+Refresher+Bar+Yonge+Toronto" target="_blank" rel="noopener">Duke's Refresher &amp; Bar</a></h3>
-          <p class="hood">Downtown Yonge · 382 Yonge St</p>
-          <p>A big, screen-heavy downtown bar with a patio right on Yonge. Central, lively and easy to reach from anywhere on the subway.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in / call ahead for groups.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=PJ+OBriens+Irish+Pub+Colborne+Toronto" target="_blank" rel="noopener">P.J. O'Brien Irish Pub</a></h3>
-          <p class="hood">St. Lawrence · 39 Colborne St</p>
-          <p>A handsome, old-school Irish pub on a quiet laneway with a tucked-away patio. Great pints and a proper football-pub feel a block from the King streetcar.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book via the website or call; the patio is small, so reserve ahead.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Track+and+Field+Bar+College+Street+Toronto" target="_blank" rel="noopener">Track &amp; Field Bar</a></h3>
-          <p class="hood">Little Italy · 860 College St</p>
-          <p>A playful sports-and-games bar (bocce, skee-ball) with a back patio and a young, buzzy crowd. A fun alternative if you want a game between the games.</p>
-          <p class="reserve"><strong>Reserve:</strong> Walk-in; call ahead to book a bocce court for a group.</p>
-        </div>
-
-        <div class="venue">
-          <h3><a href="https://www.google.com/maps/search/?api=1&query=Locals+Public+Eatery+Liberty+Village+Toronto" target="_blank" rel="noopener">Locals Public Eatery</a></h3>
-          <p class="hood">Liberty Village · 171 E Liberty St</p>
-          <p>A neighbourhood sports-forward eatery with a big patio just west of the core. Screens, cold pitchers and an unfussy crowd — an easy call if downtown is packed.</p>
-          <p class="reserve"><strong>Reserve:</strong> Book via the Locals website; walk-ins welcome.</p>
-        </div>
-
-      </div>
+      <div class="venues" id="venues"></div>
 
       <footer>
         <p>
@@ -467,5 +443,118 @@
         <p>© 2026 · <a href="/">dmitryfil.github.io</a></p>
       </footer>
     </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+      var VENUES = [
+        { name: "Real Sports Bar & Grill", hood: "Maple Leaf Square · 15 York St", lat: 43.6434, lng: -79.3790, reserve: "Book online (OpenTable / realsports.ca) — essential for big kick-offs.", rank: 1, why: "The city's flagship sports bar and a 39-foot screen make every goal feel stadium-sized. Steps from Union — impossible to beat for pure matchday energy." },
+        { name: "RendezViews", hood: "Entertainment District · 229 Richmond St W", lat: 43.6503, lng: -79.3897, reserve: "Free RSVP on the RendezViews site (19+). First-come seating — arrive early.", rank: 2, why: "The best pure-patio watch party in town: a giant open-air screen, picnic tables and a CN Tower view. Exactly the warm-July-evening vibe you want." },
+        { name: "Café Diplomatico", hood: "Little Italy · 594 College St", lat: 43.6552, lng: -79.4118, reserve: "Walk-in / call ahead. Patio tables go early.", rank: 3, why: "Sixty years as Toronto's soccer institution. The corner patio fills with fans of every nation and erupts at every goal — the most authentic atmosphere going." },
+        { name: "Score on King", hood: "St. Lawrence · 107 King St E", lat: 43.6497, lng: -79.3719, reserve: "Walk-in / call ahead for groups." },
+        { name: "Amsterdam Brewhouse", hood: "Harbourfront · 245 Queens Quay W", lat: 43.6383, lng: -79.3878, reserve: "Book on OpenTable — sells out on sunny weekends." },
+        { name: "Kōst", hood: "Bisha Hotel · 80 Blue Jays Way", lat: 43.6449, lng: -79.3925, reserve: "Book on OpenTable well ahead; rooftop tables are limited." },
+        { name: "Aera", hood: "The Well · 486 Front St W, 38th flr", lat: 43.6437, lng: -79.4003, reserve: "Book on OpenTable; ask for the outdoor terrace." },
+        { name: "Baro Rooftop", hood: "King West · 485 King St W", lat: 43.6449, lng: -79.3970, reserve: "Book on OpenTable and request Baro Rooftop." },
+        { name: "Lavelle", hood: "King West · 627 King St W", lat: 43.6438, lng: -79.4015, reserve: "Book via the Lavelle website; reservations recommended." },
+        { name: "Earls King West", hood: "King West · 601 King St W", lat: 43.6441, lng: -79.4004, reserve: "Book on OpenTable; note “rooftop” in the request." },
+        { name: "Cactus Club Cafe", hood: "Financial District · 77 Adelaide St W", lat: 43.6497, lng: -79.3823, reserve: "Book on OpenTable — near Union." },
+        { name: "The Rec Room", hood: "Roundhouse · 255 Bremner Blvd", lat: 43.6417, lng: -79.3866, reserve: "Book tables via therecroom.com; groups can reserve screenings." },
+        { name: "The Loose Moose", hood: "Downtown · 146 Front St W", lat: 43.6448, lng: -79.3865, reserve: "Walk-in / call ahead — steps from Union Station." },
+        { name: "Wheat Sheaf Tavern", hood: "King West · 667 King St W", lat: 43.6435, lng: -79.4025, reserve: "Walk-in; call ahead for larger groups." },
+        { name: "The Craft Brasserie & Grille", hood: "King West · 719 King St W", lat: 43.6430, lng: -79.4045, reserve: "Walk-in; call ahead for patio groups." },
+        { name: "Belfast Love Public House", hood: "King West · 548 King St W", lat: 43.6446, lng: -79.3990, reserve: "Book via the website or walk in early." },
+        { name: "WVRST", hood: "King West · 609 King St W", lat: 43.6440, lng: -79.4008, reserve: "Walk-in only — arrive before kick-off." },
+        { name: "Bar Hop", hood: "King West · 391 King St W", lat: 43.6455, lng: -79.3945, reserve: "Walk-in; rooftop is first-come." },
+        { name: "Northern Maverick Brewing Co.", hood: "King West · 115 Bathurst St", lat: 43.6440, lng: -79.4029, reserve: "Book on OpenTable or northernmaverick.ca." },
+        { name: "Grace O'Malley's Irish Pub", hood: "Entertainment District · 14 Duncan St", lat: 43.6479, lng: -79.3893, reserve: "Book via the website or walk in; ask about the rooftop." },
+        { name: "Hemingway's", hood: "Yorkville · 142 Cumberland St", lat: 43.6706, lng: -79.3915, reserve: "Walk-in only — arrive early on warm evenings." },
+        { name: "Shoeless Joe's", hood: "Downtown · Adelaide St W", lat: 43.6484, lng: -79.3902, reserve: "Book/call via shoelessjoes.ca; walk-ins welcome." },
+        { name: "Duke's Refresher & Bar", hood: "Downtown Yonge · 382 Yonge St", lat: 43.6600, lng: -79.3826, reserve: "Walk-in / call ahead for groups." },
+        { name: "P.J. O'Brien Irish Pub", hood: "St. Lawrence · 39 Colborne St", lat: 43.6486, lng: -79.3757, reserve: "Book via the website or call; small patio." },
+        { name: "Track & Field Bar", hood: "Little Italy · 860 College St", lat: 43.6543, lng: -79.4265, reserve: "Walk-in; call ahead to book a bocce court." },
+        { name: "Locals Public Eatery", hood: "Liberty Village · 171 E Liberty St", lat: 43.6379, lng: -79.4165, reserve: "Book via the Locals website; walk-ins welcome." }
+      ];
+
+      function mapsHref(v) {
+        return "https://www.google.com/maps/search/?api=1&query=" +
+          encodeURIComponent(v.name + " Toronto");
+      }
+      function menuHref(v) {
+        return "https://www.google.com/search?q=" +
+          encodeURIComponent(v.name + " Toronto menu");
+      }
+
+      function esc(s) {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      var ICONS = {
+        1: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#d6a85f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>',
+        2: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#d6a85f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C6 3 3 8 3 11h18C21 8 18 3 12 3zM12 11v10M8 21h8"/></svg>',
+        3: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#d6a85f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7l2.5 1.8-1 3h-3l-1-3L12 7z"/></svg>'
+      };
+
+      // Build the Top 3
+      var top3 = document.getElementById("top3");
+      VENUES.filter(function (v) { return v.rank; })
+        .sort(function (a, b) { return a.rank - b.rank; })
+        .forEach(function (v) {
+          var el = document.createElement("div");
+          el.className = "pick";
+          el.innerHTML =
+            (ICONS[v.rank] || "") +
+            '<span class="rank">' + v.rank + '</span>' +
+            '<h3><a href="' + mapsHref(v) + '" target="_blank" rel="noopener">' + esc(v.name) + '</a></h3>' +
+            '<p class="hood">' + esc(v.hood) + '</p>' +
+            '<p class="why">' + esc(v.why) + '</p>' +
+            '<p class="reserve"><strong>Reserve:</strong> ' + esc(v.reserve) + '<br>' +
+            '<a href="' + menuHref(v) + '" target="_blank" rel="noopener">View menu →</a> · ' +
+            '<a href="' + mapsHref(v) + '" target="_blank" rel="noopener">Map →</a></p>';
+          top3.appendChild(el);
+        });
+
+      // Build the list
+      var list = document.getElementById("venues");
+      VENUES.forEach(function (v) {
+        var el = document.createElement("div");
+        el.className = "venue";
+        el.innerHTML =
+          '<h3><a href="' + mapsHref(v) + '" target="_blank" rel="noopener">' + esc(v.name) + '</a></h3>' +
+          '<p class="hood">' + esc(v.hood) + '</p>' +
+          '<p class="reserve"><strong>Reserve:</strong> ' + esc(v.reserve) + '<br>' +
+          '<a href="' + menuHref(v) + '" target="_blank" rel="noopener">View menu →</a></p>';
+        list.appendChild(el);
+      });
+
+      // Build the map
+      var map = L.map("map", { scrollWheelZoom: false });
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        maxZoom: 20
+      }).addTo(map);
+
+      var bounds = [];
+      VENUES.forEach(function (v) {
+        var m = L.circleMarker([v.lat, v.lng], {
+          radius: 8,
+          color: "#101114",
+          weight: 2,
+          fillColor: "#d6a85f",
+          fillOpacity: 0.95
+        }).addTo(map);
+        m.bindPopup(
+          '<span class="pop-name">' + esc(v.name) + '</span>' +
+          '<div class="pop-hood">' + esc(v.hood) + '</div>' +
+          '<div class="pop-reserve"><strong>Reserve:</strong> ' + esc(v.reserve) + '</div>' +
+          '<div class="pop-reserve">' +
+            '<a href="' + menuHref(v) + '" target="_blank" rel="noopener">View menu →</a> · ' +
+            '<a href="' + mapsHref(v) + '" target="_blank" rel="noopener">Google Maps →</a>' +
+          '</div>'
+        );
+        bounds.push([v.lat, v.lng]);
+      });
+      map.fitBounds(bounds, { padding: [40, 40] });
+    </script>
   </body>
 </html>
