@@ -3,24 +3,234 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Daily math practice | Math Trainer (KD)</title>
-  <meta name="description" content="Free, unlimited daily math practice for iPhone and iPad. Explore exercises, support, and privacy information.">
-  <meta name="theme-color" content="#5B35DC">
-  <link rel="stylesheet" href="./style.css">
+  <title>Math Trainer (KD) | Daily Math Practice</title>
+  <meta name="description" content="Free, unlimited daily math practice for iPhone and iPad, with exercises in arithmetic, fractions, decimals, and reasoning.">
+  <meta name="theme-color" content="#0f3d3e">
+  <style>
+    :root {
+      --bg: #f1f5ef;
+      --paper: #fffef9;
+      --ink: #1f2a2c;
+      --muted: #4e5f63;
+      --line: #d6e0d7;
+      --brand: #0f3d3e;
+      --brand-soft: #2b6a6b;
+      --accent: #c95d2f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(201, 93, 47, 0.15), transparent 32%),
+        radial-gradient(circle at 85% 18%, rgba(15, 61, 62, 0.14), transparent 34%),
+        linear-gradient(160deg, #edf2e9 0%, #f7f8f2 55%, #eef4ef 100%);
+      font-family: "Avenir Next", "Trebuchet MS", "Gill Sans", "Century Gothic", sans-serif;
+      line-height: 1.55;
+      padding: 28px 16px 20px;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255, 254, 249, 0.96), rgba(255, 254, 249, 0.9));
+      box-shadow: 0 16px 36px rgba(21, 44, 45, 0.08);
+      overflow: hidden;
+      animation: rise 0.65s ease-out both;
+    }
+
+    .hero {
+      padding: 32px 28px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand-soft);
+      margin: 0 0 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6.5vw, 3.2rem);
+      line-height: 1.02;
+      font-family: "Baskerville", "Iowan Old Style", "Garamond", serif;
+      color: #162022;
+      text-wrap: balance;
+    }
+
+    .tagline {
+      margin: 12px 0 0;
+      color: var(--muted);
+      max-width: 48ch;
+      font-size: 1.03rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 9px 14px;
+      font-size: 0.92rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(130deg, var(--brand), #255a5c);
+      color: #f6fbfc;
+      box-shadow: 0 8px 18px rgba(15, 61, 62, 0.24);
+    }
+
+    .btn.secondary {
+      color: var(--brand);
+      border-color: #93a9a4;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .btn.disabled {
+      color: #6a7779;
+      border-color: #c5d0cb;
+      background: rgba(255, 255, 255, 0.48);
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .btn.disabled:hover {
+      transform: none;
+    }
+
+    section {
+      padding: 20px 28px 26px;
+      animation: fade 0.65s ease-out both;
+      animation-delay: 0.1s;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--brand-soft);
+    }
+
+    .feature-list {
+      margin: 0;
+      padding-left: 1.2rem;
+      display: grid;
+      gap: 6px;
+    }
+
+    .feature-list li {
+      color: #213035;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 13px 28px 18px;
+      font-size: 0.86rem;
+      color: #5e6f73;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: var(--brand);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero {
+        padding: 26px 20px 20px;
+      }
+
+      section {
+        padding: 18px 20px 22px;
+      }
+
+      footer {
+        padding: 12px 20px 16px;
+      }
+
+      .tagline {
+        font-size: 0.98rem;
+      }
+    }
+
+a:focus-visible { outline:3px solid var(--accent); outline-offset:4px; } a { overflow-wrap:anywhere; } @media(prefers-reduced-motion:reduce) { main, section { animation:none; } .btn { transition:none; } }
+</style>
 </head>
 <body>
-<main>
-  <nav aria-label="Math Trainer"><a href="./index.html" aria-current="page">Overview</a><a href="./support.html">Support</a><a href="./privacy-policy.html">Privacy</a></nav>
-  <h1>Math Trainer (KD)</h1>
-  <p class="lead">Small sessions. Stronger skills.</p>
-  <p>Practice arithmetic, fractions, decimals, patterns, money, time, and math reasoning at your own pace. Choose Easy, Normal, or Hard, try a daily challenge, and follow your progress on your device.</p>
-  <h2>Free and unlimited</h2>
-  <p>The planned public iOS release includes all exercises and local statistics, with no subscriptions, purchases, or practice limits. It has no ads and requires no online account.</p>
-  <h2>Made for short practice sessions</h2>
-  <ul><li>Practice on iPhone or iPad, including offline.</li><li>Choose English, French, Italian, or Spanish in the app.</li><li>Track practice streaks and monthly quest progress, with optional Home Screen widgets.</li></ul>
-  <p>The public iOS release is being prepared. For help with an existing test build, visit <a href="./support.html">Support</a>.</p>
-  <p>Read how the public app handles data in the <a href="./privacy-policy.html">Privacy Policy</a>.</p>
-  <footer>Math Trainer (KD) · Dmitry Filippov · <a href="mailto:dimfilippov@gmail.com">dimfilippov@gmail.com</a></footer>
-</main>
+  <main>
+    <header class="hero">
+      <p class="kicker">Daily Math Practice</p>
+      <h1>Math Trainer (KD)</h1>
+      <p class="tagline">Small sessions. Stronger skills. Practice arithmetic, fractions, decimals, and math reasoning at your own pace.</p>
+      <nav class="actions" aria-label="Math Trainer">
+        <span class="btn secondary disabled" aria-disabled="true">iOS App Store (Upcoming)</span>
+        <a class="btn primary" href="./support.html">Support</a>
+        <a class="btn secondary" href="./privacy-policy.html">Privacy Policy</a>
+      </nav>
+    </header>
+    <section aria-labelledby="features">
+      <h2 id="features">Practice Highlights</h2>
+      <ul class="feature-list">
+        <li>Free, unlimited exercises and local statistics, with no ads or purchases</li>
+        <li>Arithmetic, fractions, decimals, patterns, money, time, balance, and reasoning</li>
+        <li>Easy, Normal, and Hard levels, plus daily challenges and monthly quests</li>
+        <li>English, French, Italian, and Spanish</li>
+        <li>Offline practice on iPhone and iPad, with local progress and Home Screen widgets</li>
+      </ul>
+    </section>
+    <footer>
+      <span>Math Trainer (KD) · Public iOS release in preparation</span>
+      <a href="https://github.com/dmitryfil/kd-games-portal">KD Games Portal</a>
+    </footer>
+  </main>
 </body>
 </html>
